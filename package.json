@@ -8,8 +8,13 @@
   },
   "author": "Petr Grishin",
   "license": "MIT",
+  "dependencies": {
+    "async": "^3.1.0"
+  },
   "devDependencies": {
+    "@types/async": "^3.0.3",
     "@types/jest": "^24.0.24",
+    "@types/node": "^13.1.1",
     "jest": "^24.9.0",
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"

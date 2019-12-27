@@ -1,43 +1,51 @@
 import eachAsync from './each-async';
 
-
 describe('EachAsync', () => {
-    it('asyncIterator fn error', async () => {
+
+    async function * range (num) {
+        for(let i = 0; i < num; i++) {
+            yield i;
+        }
+    }
+
+    it('async generator', async () => {
         const count = 10;
+        let expectedValue = 0;
         expect.assertions(count);
 
-        const asyncIterator = async function*() {
-            let i = 0;
-            while (true) {
-                i++;
-                const done = i > count;
-                if (done) {
-                    return;
-                }
-                yield 10;
-            }
-        };
+        await eachAsync(
+            range(count),
+            async value => {
+                expect(value).toBe(expectedValue);
+                expectedValue++;
+            },
+            { parallel: 2 },
+        );
+    });
 
-        let i = 0;
+    it('asyncIterator fn error', async () => {
+        const count = 10;
+        let expectedValue = 0;
+        expect.assertions(count);
+
         await expect(
             eachAsync(
-                asyncIterator(),
+                range(count),
                 async value => {
-                    expect(value).toBe(10);
-                    i++;
-                    if (i === 8) {
+                    expect(value).toBe(expectedValue);
+                    expectedValue++;
+                    if (expectedValue === count - 1) {
                         throw new Error('AsyncIterator Error');
                     }
                 },
-                { parallel: 2 },
+                { parallel: 1 },
             ),
         ).rejects.toThrow('AsyncIterator Error');
-        return true;
     });
 
     it('asyncIterator error', async () => {
         const count = 10;
-        expect.assertions(count);
+        expect.assertions(count - 1);
 
         const asyncIterator = async function*() {
             let i = 0;
@@ -60,60 +68,9 @@ describe('EachAsync', () => {
                 async value => {
                     expect(value).toBe(10);
                 },
-                { parallel: 2 },
+                { parallel: 1 },
             ),
         ).rejects.toThrow('AsyncIterator Error');
     });
 
-    it('asyncIterator', async () => {
-        const count = 1e4;
-        expect.assertions(count + 1);
-
-        let i = 0;
-        const asyncIterator = {
-            [Symbol.asyncIterator]: () => ({
-                async next() {
-                    i++;
-                    return { value: 10, done: i > count };
-                },
-            }),
-        };
-
-        await eachAsync(
-            asyncIterator,
-            async value => {
-                expect(value).toBe(10);
-            },
-            { parallel: 500 },
-        );
-
-        expect(true).toBe(true);
-    });
-
-    it('async generator', async () => {
-        const count = 10;
-        expect.assertions(count + 1);
-
-        const asyncIterator = async function*() {
-            let i = 0;
-            while (true) {
-                i++;
-                const done = i > count;
-                if (done) {
-                    return;
-                }
-                yield 10;
-            }
-        };
-
-        await eachAsync(
-            asyncIterator(),
-            async value => {
-                expect(value).toBe(10);
-            },
-            { parallel: 2 },
-        );
-
-        expect(true).toBe(true);
-    });
 });
