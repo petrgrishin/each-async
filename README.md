@@ -1,5 +1,6 @@
 each-async
 =========
+Async generators/iterators in parallel
 
 ```javascript
 // >= nodejs v10.17
